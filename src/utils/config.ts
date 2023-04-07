@@ -5,8 +5,8 @@ import { workspace } from "vscode";
 const configuration = workspace.getConfiguration("codeverbs", undefined);
 
 // Get the configuration values
-// export const enableExtension = configuration.get("EnableExtension", true);
-export const enableExtension = false;
+export const enableExtension = configuration.get("EnableExtension", true);
+// export const enableExtension = false;
 
 export const controls = {
     promptMode: {

@@ -3,13 +3,15 @@ import { enableExtension } from './config';
 
 var statusbartimer: NodeJS.Timeout;
 
+let isExtEnabled = enableExtension;
+
 export async function manageStatus(
     statusBar: vscode.StatusBarItem,
     codeIsLoading: boolean,
     isLoading: boolean,
     info: string,
 ): Promise<void> {
-    statusBar.tooltip = `${(enableExtension)? "Disable" : "Enable"} CodeVerb`;
+    statusBar.tooltip = `${(isExtEnabled)? "Disable" : "Enable"} CodeVerb`;
     statusBar.show();
     if (statusbartimer) {
         clearTimeout(statusbartimer);
@@ -30,33 +32,22 @@ export async function manageStatus(
     }
 }
 
-let isExtEnable: boolean;
-
 export function manageStatusTheme(
     statusBar: vscode.StatusBarItem,
     originalColor: string | vscode.ThemeColor | undefined,
-    switchTab?: boolean
+    isEnabled: boolean
 ): void {
     statusBar.show();
-    manageStatus(statusBar, false, false, "");
-    if (switchTab) {
-        if (isExtEnable) {
-            statusBar.backgroundColor = originalColor;
-        } else {
-            originalColor = statusBar.backgroundColor;
-            statusBar.backgroundColor = new vscode.ThemeColor(
-                "statusBarItem.warningBackground"
-            );
-        }
-    } else {
-        isExtEnable = enableExtension;
-        if (enableExtension) {
-            statusBar.backgroundColor = originalColor;
-        } else {
-            originalColor = statusBar.backgroundColor;
-            statusBar.backgroundColor = new vscode.ThemeColor(
-                "statusBarItem.warningBackground"
-            );
-        }
+    if (isEnabled) {
+        isExtEnabled = true;
+        statusBar.backgroundColor = originalColor;
     }
+    else {
+        isExtEnabled = false;
+        originalColor = statusBar.backgroundColor;
+        statusBar.backgroundColor = new vscode.ThemeColor(
+            "statusBarItem.warningBackground"
+        );
+    }
+    manageStatus(statusBar, false, false, "");
 }
