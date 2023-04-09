@@ -47,7 +47,6 @@ export function activate(context: vscode.ExtensionContext) {
     const sidebar = new CodeverbSidebar(
         context.extensionUri
     );
-    console.log(context.extensionUri)
     const sidebarView = vscode.window.registerWebviewViewProvider(
         "codeverb-algo-to-code",
         sidebar
