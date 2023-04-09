@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { manageStatus, manageStatusTheme } from "./utils/manageStatus";
 import { enableExtension } from './utils/config';
 import toggleExt from './utils/toggleExtension';
+import CodeverbSidebar from './webview/Sidebar';
 
 // Global variables
 let isCodeLoading = false;
@@ -41,6 +42,17 @@ export function activate(context: vscode.ExtensionContext) {
     } else {
         context.globalState.update("EnableExtension", false);
     }
+
+    // Set the algo to code sidebars
+    const sidebar = new CodeverbSidebar(
+        context.extensionUri
+    );
+    console.log(context.extensionUri)
+    const sidebarView = vscode.window.registerWebviewViewProvider(
+        "codeverb-algo-to-code",
+        sidebar
+    );
+    context.subscriptions.push(sidebarView);
 }
 
 // This method is called when your extension is deactivated
