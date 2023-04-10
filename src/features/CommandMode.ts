@@ -16,7 +16,7 @@ export async function commandMode(
         return;
     }
     const currentLine = editor.selection.active.line;
-    const currentLineText = editor.document.lineAt(currentLine).text;
+    const currentLineText = editor.document.lineAt(currentLine).text?.trim();
     if (!currentLineText.startsWith('#')) {
         vscode.window.showErrorMessage('Current line is not a comment!');
         return;
@@ -27,13 +27,15 @@ export async function commandMode(
         return;
     }
     manageStatus(statusBar, true, "");
-    let result;
+    let result: string;
     let status = "Done";
     try {
         result = await getPredictedCode(commentText);
+        // Insert the result into the editor in the next line after the comment
+        await insertCode(editor, currentLine, result);
     }
     catch (error) {
-        result = error;
+        result = "";
         status = "Error";
     }
     console.log("Comment: " + commentText);
@@ -49,5 +51,22 @@ async function getPredictedCode(
       setTimeout(() => {
         resolve("def sum(a,b):\n\treturn a+b\nprint(sum(1,2))");
       }, 2000);
+    });
+}
+
+async function insertCode(
+    editor: vscode.TextEditor,
+    commentLine: number,
+    code: string
+) {
+    const lineCount = editor.document.lineCount;
+    const linesAfterComment = lineCount - (commentLine + 1);
+    const currentLine = editor.document.lineAt(commentLine);
+    const currentIndentation = currentLine.text.match(/^\s*/)?.[0] ?? "";
+    const insertNewLine = linesAfterComment === 0 ? "\n" : "";
+    const insertPosition = new vscode.Position(commentLine + 1, 0);
+    const insertText = insertNewLine + currentIndentation + code.split('\n').join('\n' + currentIndentation) + '\n';
+    await editor.edit(editBuilder => {
+        editBuilder.insert(insertPosition, insertText);
     });
 }
