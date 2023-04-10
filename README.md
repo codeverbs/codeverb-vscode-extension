@@ -1,8 +1,8 @@
 # CodeVerb
 
-[![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/yourmarketplace.id.svg?label=Visual%20Studio%20Marketplace&logo=visual-studio-code&logoColor=white)](https://marketplace.visualstudio.com/items?itemName=yourmarketplace.id)
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/codeverbs/codeverb-vscode-extension?logo=github)](https://github.com/codeverbs/codeverb-vscode-extension/releases)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/codeverbs/codeverb-vscode-extension/blob/main/LICENSE)
+[![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/CodeVerb.codeverbs.svg?label=Visual%20Studio%20Marketplace&logo=visual-studio-code&logoColor=white)](https://marketplace.visualstudio.com/items?itemName=CodeVerb.codeverbs)
+<!-- [![GitHub release (latest by date)](https://img.shields.io/github/v/release/codeverbs/codeverb-vscode-extension?logo=github)](https://github.com/codeverbs/codeverb-vscode-extension/releases) -->
+[![License](https://img.shields.io/badge/License-Proprietary-orange.svg)](https://github.com/codeverbs/codeverb-vscode-extension/blob/main/LICENSE.md)
 
 CodeVerb took the initiative to revolutionize the development like never before. CodeVerb generates Python Language Code from English Language Text. This is the official VS Code extension for CodeVerb. Install this extension to get Python code predictions based of your comments.
 
@@ -48,4 +48,4 @@ To use the "Stealth Mode", simply start typing code in the active editor, and th
 
 ## License
 
-CodeVerb is licensed under the [MIT License](https://github.com/codeverbs/codeverb-vscode-extension/blob/main/LICENSE).
+CodeVerb is licensed under the [PROPRIETARY LICENSE](https://github.com/codeverbs/codeverb-vscode-extension/blob/main/LICENSE.md).
