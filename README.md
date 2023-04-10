@@ -4,7 +4,7 @@
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/codeverbs/codeverb-vscode-extension?logo=github)](https://github.com/codeverbs/codeverb-vscode-extension/releases)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/codeverbs/codeverb-vscode-extension/blob/main/LICENSE)
 
-CodeVerb is a Visual Studio Code extension that links to our AI modal which converts text to Python code. It's developed using TypeScript.
+CodeVerb took the initiative to revolutionize the development like never before. CodeVerb generates Python Language Code from English Language Text. This is the official VS Code extension for CodeVerb. Install this extension to get Python code predictions based of your comments.
 
 ## Features
 
