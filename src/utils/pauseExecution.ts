@@ -1,8 +1,4 @@
 
-export function wait(ms: number) {
-    var start = new Date().getTime();
-    var end = start;
-    while(end < start + ms) {
-        end = new Date().getTime();
-    }
+export function wait(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }

@@ -137,7 +137,7 @@ export default class CodeverbSidebar implements WebviewViewProvider {
                         result = "def sum(a,b):\n\treturn a+b\nprint(sum(1,2))";
                         // Pause execution for 3 seconds to simulate the AI model processing
                         // Remove this line if you are using your own AI model
-                        wait(3000);
+                        await wait(3000);
                     } catch (err) {
                         result = err;
                         status = "error";
