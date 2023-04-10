@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { manageStatus, manageStatusTheme } from "./utils/manageStatus";
 import { enableExtension } from './utils/config';
 import toggleExt from './utils/toggleExtension';
-import CodeverbSidebar from './webview/Sidebar';
+import CodeverbSidebar from './features/Sidebar';
 import { commandMode } from './features/CommandMode';
 
 // Global variables

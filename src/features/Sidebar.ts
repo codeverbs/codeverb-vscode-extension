@@ -43,11 +43,11 @@ export default class CodeverbSidebar implements WebviewViewProvider {
             "toolkit.js",
         ]);
         const mainUri = getUri(webview, extensionUri, [
-            "src/webview",
+            "webview",
             "main.js",
         ]);
         const stylesUri = getUri(webview, extensionUri, [
-            "src/webview",
+            "webview",
             "styles.css",
         ]);
         // Tip: Install the es6-string-html VS Code extension to enable code highlighting below

@@ -3,7 +3,8 @@
 	"displayName": "CodeVerb",
 	"description": "Generate python code using natural language prompts.",
 	"version": "0.1.0",
-	"icon": "./assets/codeverb_logo.jpg",
+	"icon": "./assets/codeverb_logo.png",
+	"publisher": "CodeVerb",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/codeverbs/codeverb-vscode-extension"
