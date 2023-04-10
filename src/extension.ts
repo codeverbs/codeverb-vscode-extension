@@ -3,9 +3,9 @@ import { manageStatus, manageStatusTheme } from "./utils/manageStatus";
 import { enableExtension } from './utils/config';
 import toggleExt from './utils/toggleExtension';
 import CodeverbSidebar from './webview/Sidebar';
+import { commandMode } from './features/CommandMode';
 
 // Global variables
-let isCodeLoading = false;
 let originalColor: string | vscode.ThemeColor | undefined;
 let statusBar: vscode.StatusBarItem;
 
@@ -24,12 +24,12 @@ export function activate(context: vscode.ExtensionContext) {
         100
     );
 	manageStatusTheme(statusBar, originalColor, enableExtension);
-    manageStatus(statusBar, isCodeLoading, false, "No Suggestions");
+    manageStatus(statusBar, false, "No Suggestions");
 
 	// Enable/Disable extension
 	const statusBarCommand = "codeverbs.toggle-extension";
     context.subscriptions.push(
-        vscode.commands.registerCommand("codeverbs.toggle-extension", () => {
+        vscode.commands.registerCommand(statusBarCommand, () => {
             toggleExt(statusBar, originalColor, context);
         })
     );
@@ -42,6 +42,13 @@ export function activate(context: vscode.ExtensionContext) {
     } else {
         context.globalState.update("EnableExtension", false);
     }
+
+    // Command mode convert comment to Python 
+    context.subscriptions.push(
+        vscode.commands.registerCommand("codeverbs.command-mode-convert", async () => {
+            commandMode(statusBar, context);
+        })
+    );
 
     // Set the algo to code sidebars
     const sidebar = new CodeverbSidebar(

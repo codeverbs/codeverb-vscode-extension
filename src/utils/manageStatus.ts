@@ -7,20 +7,17 @@ let isExtEnabled = enableExtension;
 
 export async function manageStatus(
     statusBar: vscode.StatusBarItem,
-    codeIsLoading: boolean,
     isLoading: boolean,
     info: string,
 ): Promise<void> {
     statusBar.tooltip = `${(isExtEnabled)? "Disable" : "Enable"} CodeVerb`;
-    statusBar.show();
     if (statusbartimer) {
         clearTimeout(statusbartimer);
     }
     if (isLoading) {
-        codeIsLoading = true;
         statusBar.text = `$(loading~spin)` + " " + info;
+        console.log("Test#23");
     } else if(enableExtension) {
-        codeIsLoading = false;
         statusBar.text = `$(codeverb-logo)` + " " + info;
         // Remove status text after 15 seconds
         statusbartimer = setTimeout(() => {
@@ -30,6 +27,7 @@ export async function manageStatus(
     else {
         statusBar.text = `$(codeverb-logo)`;
     }
+    statusBar.show();
 }
 
 export function manageStatusTheme(
@@ -49,5 +47,5 @@ export function manageStatusTheme(
             "statusBarItem.warningBackground"
         );
     }
-    manageStatus(statusBar, false, false, "");
+    manageStatus(statusBar, false, "");
 }
