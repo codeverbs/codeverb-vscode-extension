@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
 import { manageStatus } from '../utils/manageStatus';
+import insertCode from '../utils/insertCode';
+import axios from 'axios';
 
 export async function commandMode(
     statusBar: vscode.StatusBarItem,
@@ -43,30 +45,19 @@ export async function commandMode(
     manageStatus(statusBar, false, status);
 }
 
-async function getPredictedCode(
-    commentText: string
-  ): Promise<string> {
-    // Call your AI model here and return the predicted code
-    return new Promise(resolve => {
-      setTimeout(() => {
-        resolve("def sum(a,b):\n\treturn a+b\nprint(sum(1,2))");
-      }, 2000);
+async function getPredictedCode(commentText: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      axios.post(`http://127.0.0.1:5050/api/predict`, {
+        inference_type: "Comment2Python",
+        query: commentText,
+        model: "CodeVerbTLM-0.1B"
+      })
+        .then(res => {
+          resolve(res.data.result);
+        })
+        .catch(error => {
+          reject(error);
+        });
     });
-}
+  }
 
-async function insertCode(
-    editor: vscode.TextEditor,
-    commentLine: number,
-    code: string
-) {
-    const lineCount = editor.document.lineCount;
-    const linesAfterComment = lineCount - (commentLine + 1);
-    const currentLine = editor.document.lineAt(commentLine);
-    const currentIndentation = currentLine.text.match(/^\s*/)?.[0] ?? "";
-    const insertNewLine = linesAfterComment === 0 ? "\n" : "";
-    const insertPosition = new vscode.Position(commentLine + 1, 0);
-    const insertText = insertNewLine + currentIndentation + code.split('\n').join('\n' + currentIndentation) + '\n';
-    await editor.edit(editBuilder => {
-        editBuilder.insert(insertPosition, insertText);
-    });
-}

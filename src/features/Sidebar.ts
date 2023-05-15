@@ -1,3 +1,5 @@
+import * as fs from "fs";
+import * as path from "path";
 import {
     CancellationToken,
     Uri,
@@ -8,7 +10,11 @@ import {
     window,
 } from "vscode";
 import getUri from "../utils/getUri";
+import Microphone from "../utils/microphone";
+import { convertAudio, fixAudio, transcribeAudio } from "../utils/audio";
+import insertCode from "../utils/insertCode";
 import { wait } from "../utils/pauseExecution";
+import axios from "axios";
 
 export default class CodeverbSidebar implements WebviewViewProvider {
     constructor(private readonly _extensionUri: Uri) {}
@@ -20,7 +26,7 @@ export default class CodeverbSidebar implements WebviewViewProvider {
     ) {
         // Allow scripts in the webview
         webviewView.webview.options = {
-            enableScripts: true,
+            enableScripts: true
         };
 
         // Set the HTML content that will fill the webview view
@@ -65,31 +71,73 @@ export default class CodeverbSidebar implements WebviewViewProvider {
                     hljs.highlightAll();                   
                 </script>
                 <link rel="stylesheet" href="${stylesUri}" />
-                <title>Algorithm To Code</title>
+                <title></title>
             </head>
             <body>
-                <table>
-                    <tr>
-                        <th class="title">Algorithm</th>
-                    </tr>
-                </table>
-                <br/>
-                <section>
-                    <textarea cols="50" rows="10" id="algoInput"></textarea>
-                </section>
-                
-                <table border="0" style="vertical-align: middle">
-                    <tr>
-                        <td>
-                            <vscode-button class="actionButton convertBtn" id="convertButton">
-                                <span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 22 22"><g stroke="#FFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M13.6 11.58v2.73c0 2.28-.91 3.19-3.19 3.19H7.69c-2.27 0-3.19-.91-3.19-3.19v-2.73c0-2.27.91-3.18 3.19-3.18h2.73c2.27 0 3.18.91 3.18 3.18Z"/><path d="M17.5 7.68v2.73c0 2.28-.91 3.19-3.19 3.19h-.71v-2.02c0-2.27-.91-3.18-3.19-3.18H8.4v-.72c0-2.28.91-3.18 3.19-3.18h2.73c2.27 0 3.18.91 3.18 3.18ZM21 14c0 3.87-3.13 7-7 7l1.05-1.75M1 8c0-3.87 3.13-7 7-7L6.95 2.75"/></g></svg>
-                                </span>
-                                <span>&nbsp;&nbsp;Convert</span>
-                            </vscode-button>
-                        </td>
-                    </tr>
-                </table>
+                <vscode-panels aria-label="Default">
+                    <vscode-panel-tab id="tab-1">Algo To Code</vscode-panel-tab>
+                    <vscode-panel-tab id="tab-2">Speech To Code</vscode-panel-tab>
+                    <vscode-panel-view id="view-1">
+                        <table>
+                            <tr>
+                                <th class="title">Algorithm</th>
+                            </tr>
+                        </table>
+                        <br/>
+                        <section>
+                            <textarea cols="50" rows="10" id="algoInput"></textarea>
+                        </section>
+                        <table border="0" style="vertical-align: middle">
+                            <tr>
+                                <td>
+                                    <vscode-button class="actionButton convertBtn" id="convertButton1">
+                                        <span>
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 22 22"><g stroke="#FFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M13.6 11.58v2.73c0 2.28-.91 3.19-3.19 3.19H7.69c-2.27 0-3.19-.91-3.19-3.19v-2.73c0-2.27.91-3.18 3.19-3.18h2.73c2.27 0 3.18.91 3.18 3.18Z"/><path d="M17.5 7.68v2.73c0 2.28-.91 3.19-3.19 3.19h-.71v-2.02c0-2.27-.91-3.18-3.19-3.18H8.4v-.72c0-2.28.91-3.18 3.19-3.18h2.73c2.27 0 3.18.91 3.18 3.18ZM21 14c0 3.87-3.13 7-7 7l1.05-1.75M1 8c0-3.87 3.13-7 7-7L6.95 2.75"/></g></svg>
+                                        </span>
+                                        <span>&nbsp;&nbsp;Convert</span>
+                                    </vscode-button>
+                                </td>
+                            </tr>
+                        </table>
+                    </vscode-panel-view>
+                    <vscode-panel-view id="view-2">
+                        <table>
+                            <tr>
+                                <th class="title">Recording</th>
+                            </tr>
+                        </table>
+                        <table>
+                            <tr>
+                                <td>
+                                    <vscode-button class="actionButton recBtn recBtn1" id="startRecordBtn">Start</vscode-button>
+                                </td>
+                                <td>
+                                    <vscode-button class="actionButton recBtn recBtn2"id="stopRecordBtn" disabled>Stop</vscode-button>
+                                </td>
+                            </tr>
+                        </table>                       
+                        <br/>
+                        <table>
+                            <tr>
+                                <th class="title">Transciption</th>
+                            </tr>
+                        </table>
+                        <br/>
+                        <section id="sttOutput"><span style="color: grey;"><i>Your transcription will appear here</i></span></section>
+                        <table border="0" style="vertical-align: middle">
+                            <tr>
+                                <td>
+                                    <vscode-button class="actionButton convertBtn" id="convertButton2">
+                                        <span>
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 22 22"><g stroke="#FFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M13.6 11.58v2.73c0 2.28-.91 3.19-3.19 3.19H7.69c-2.27 0-3.19-.91-3.19-3.19v-2.73c0-2.27.91-3.18 3.19-3.18h2.73c2.27 0 3.18.91 3.18 3.18Z"/><path d="M17.5 7.68v2.73c0 2.28-.91 3.19-3.19 3.19h-.71v-2.02c0-2.27-.91-3.18-3.19-3.18H8.4v-.72c0-2.28.91-3.18 3.19-3.18h2.73c2.27 0 3.18.91 3.18 3.18ZM21 14c0 3.87-3.13 7-7 7l1.05-1.75M1 8c0-3.87 3.13-7 7-7L6.95 2.75"/></g></svg>
+                                        </span>
+                                        <span>&nbsp;&nbsp;Convert</span>
+                                    </vscode-button>
+                                </td>
+                            </tr>
+                        </table>
+                    </vscode-panel-view>
+                </vscode-panels>
                 <br/>
                 <table>
                     <tr>
@@ -108,12 +156,12 @@ export default class CodeverbSidebar implements WebviewViewProvider {
                     <pre>
                         <code class="language-python" id='pythonCode'># Converted Python code will appear here</code>
                     </pre>
-                    <script>
-                        function highlight(){
-                            hljs.highlightElement(document.getElementById("pythonCode"));
-                        }
-                    </script>
                 </section>
+                <script>
+                    function highlight(){
+                        hljs.highlightElement(document.getElementById("pythonCode"));
+                    }
+                </script>
             </body>
         </html>
         `;
@@ -121,6 +169,10 @@ export default class CodeverbSidebar implements WebviewViewProvider {
 
     private _setWebviewMessageListener(webviewView: WebviewView) {
         let commandid = "";
+        const recordingPath = path.join(__dirname, "..", "assets", "temp.wav");
+        const finalRecording = path.join(__dirname, "..", "assets", "final.wav");
+        const mic = new Microphone();
+        let micStream = null;
         webviewView.webview.onDidReceiveMessage(async (message) => {
             const command = message.command;
             switch (command) {
@@ -129,15 +181,29 @@ export default class CodeverbSidebar implements WebviewViewProvider {
                     webviewView.webview.postMessage({
                         command: "code.convert.processing",
                     });
-                    // Get the predicted code against our algorithm from our AI modal
-                    const algorithm = message.algoInput;
+                    // Get the predicted code against our algorithm/text from our AI modal
+                    const query = message.input;
+                    const type = message.type;
                     let result;
                     let status = "success";
                     try {
-                        result = "def sum(a,b):\n\treturn a+b\nprint(sum(1,2))";
+                        result = "a=5\nb=10\ndef sum(a,b):\n\treturn a+b\nprint(sum(1,2))";
+                        // result = await axios.post(`http://127.0.0.1:5050}/api/predict`, 
+                        // { 
+                        //     inference_type: type,
+                        //     query: algorithm,
+                        //     model: "CodeVerbTLM-0.7B"
+                        // })
+                        // .then(res => {
+                        //     return res.data.result;
+                        // })
+                        // .catch(error => {
+                        //     console.log(error);
+                        //     return error;
+                        // });
                         // Pause execution for 3 seconds to simulate the AI model processing
                         // Remove this line if you are using your own AI model
-                        await wait(3000);
+                        // await wait(3000);
                     } catch (err) {
                         result = err;
                         status = "error";
@@ -151,17 +217,62 @@ export default class CodeverbSidebar implements WebviewViewProvider {
                 case "code.insert":
                     const editor = window.activeTextEditor;
                     if (!editor) {
+                        window.showErrorMessage('No active editor found!');
                         break;
                     }
-                    editor.edit(async (editBuilder) => {
-                        var sel = editor.selection;
-                        editBuilder.replace(sel, message.result);
-                    });
+                    const currentLine = editor.selection.active.line;
+                    await insertCode(editor, currentLine, message.result);
                     break;
-                case "code.convert.error.inputEmpty":
+                case "code.convert.error.algoEmpty":
                     window.showInformationMessage(
                         "Algorithm can't be empty! Provide a valid algorithm to convert."
                     );
+                    break;
+                case "code.convert.error.transcriptionEmpty":
+                    window.showInformationMessage(
+                        "Transcription can't be empty! Provide a valid voice command to convert."
+                    );
+                    break;
+                case "code.startRecording":
+                    let outputFileStream = fs.createWriteStream(recordingPath);
+                    micStream = mic.startRecording();
+                    micStream?.pipe(outputFileStream);
+                    console.log("Recording started ...");
+                    webviewView.webview.postMessage({
+                        command: "code.transcription.status",
+                        payload: "Recording voice input ...",
+                    });
+                    break;
+                case "code.stopRecording":
+                    mic.stopRecording();
+                    console.log("Recording stopped ...");
+                    webviewView.webview.postMessage({
+                        command: "code.transcription.status",
+                        payload: "Processing voice input ...",
+                    });
+                    // Adjusting the Audio Format and fixing the bugs
+                    try {
+                        await fixAudio(recordingPath);
+                        await convertAudio(finalRecording);
+                    }
+                    catch(error) {
+                        console.log(error);
+                    }
+                    // Converting Speech to text
+                    try {
+                        const transcription = await transcribeAudio(finalRecording);
+                        webviewView.webview.postMessage({
+                            command: "code.transcription.success",
+                            payload: transcription,
+                        });
+                    }
+                    catch (error) {
+                        console.log("Transciption Error: ", error);
+                        webviewView.webview.postMessage({
+                            command: "code.transcription.error",
+                            payload: error,
+                        });
+                    }
                     break;
             }
         });
